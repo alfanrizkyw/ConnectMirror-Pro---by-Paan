@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiveStream Pro - Real-Time Online Mirroring</title>
+    <title>ScreenShare Live - Real-Time Screen Sharing</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -13,7 +13,7 @@
         }
 
         :root {
-            --primary: #6366f1;
+            --primary: #3b82f6;
             --secondary: #8b5cf6;
             --success: #10b981;
             --warning: #f59e0b;
@@ -23,7 +23,7 @@
             --dark-tertiary: #334155;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
 
@@ -46,29 +46,42 @@
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
         }
 
-        .network-grid {
+        .network-animation {
             position: absolute;
             width: 100%;
             height: 100%;
             opacity: 0.1;
-            background-image: 
-                radial-gradient(circle at 20% 50%, var(--primary) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, var(--secondary) 0%, transparent 50%),
-                radial-gradient(circle at 50% 20%, var(--primary) 0%, transparent 50%),
-                radial-gradient(circle at 50% 80%, var(--secondary) 0%, transparent 50%);
-            background-size: 300px 300px, 300px 300px, 300px 300px, 300px 300px;
-            background-position: 0 0, 0 0, 0 0, 0 0;
-            animation: network-pulse 10s ease-in-out infinite;
         }
 
-        @keyframes network-pulse {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.2; }
+        .network-node {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: node-float 20s infinite linear;
+        }
+
+        @keyframes node-float {
+            0% {
+                transform: translate(0, 100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(100vw, -100vh) scale(1);
+                opacity: 0;
+            }
         }
 
         /* Header */
         header {
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.9);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(148, 163, 184, 0.1);
             padding: 1rem 2rem;
@@ -106,6 +119,12 @@
             font-size: 0.875rem;
         }
 
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         .status-dot {
             width: 8px;
             height: 8px;
@@ -114,7 +133,7 @@
             transition: all 0.3s ease;
         }
 
-        .status-dot.online {
+        .status-dot.connected {
             background: var(--success);
             box-shadow: 0 0 10px var(--success);
             animation: pulse 2s infinite;
@@ -188,60 +207,94 @@
             line-height: 1.6;
         }
 
-        /* Room Selection */
+        /* Room Section */
         .room-section {
             margin-bottom: 2rem;
         }
 
+        .room-input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
         .room-input {
-            width: 100%;
+            flex: 1;
             padding: 1rem;
             background: var(--dark-tertiary);
             border: 2px solid rgba(148, 163, 184, 0.2);
             border-radius: 12px;
             color: var(--text-primary);
             font-size: 1.1rem;
-            text-align: center;
-            margin-bottom: 1rem;
             transition: all 0.3s ease;
         }
 
         .room-input:focus {
             outline: none;
             border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(59, 130, 246, 0.1);
         }
 
-        .room-code {
-            font-size: 2.5rem;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 0.5rem;
+        .generate-btn {
+            padding: 1rem 1.5rem;
             background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            padding: 1.5rem;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .room-display {
             background: var(--dark-tertiary);
+            border: 2px solid rgba(59, 130, 246, 0.3);
             border-radius: 16px;
+            padding: 1.5rem;
             margin: 1rem 0;
             position: relative;
             overflow: hidden;
         }
 
-        .room-code::before {
+        .room-display::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
             animation: scan 3s linear infinite;
         }
 
         @keyframes scan {
             0% { left: -100%; }
             100% { left: 100%; }
+        }
+
+        .room-code {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        .room-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         /* Role Selection */
@@ -253,12 +306,29 @@
         }
 
         .role-card {
-            padding: 1.5rem;
+            padding: 2rem;
             background: var(--dark-tertiary);
             border: 2px solid transparent;
             border-radius: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .role-card:hover::before {
+            left: 100%;
         }
 
         .role-card:hover {
@@ -268,27 +338,29 @@
 
         .role-card.selected {
             border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(59, 130, 246, 0.1);
         }
 
         .role-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 3rem;
+            margin-bottom: 1rem;
             color: var(--primary);
         }
 
         .role-title {
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
         }
 
         .role-desc {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
+            line-height: 1.4;
         }
 
-        /* Buttons */
-        .button-group {
+        /* Action Buttons */
+        .action-buttons {
             display: flex;
             gap: 1rem;
             justify-content: center;
@@ -306,8 +378,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
         }
 
         .btn:disabled {
@@ -322,7 +392,7 @@
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
         }
 
         .btn-secondary {
@@ -336,12 +406,12 @@
             border-color: var(--primary);
         }
 
-        /* Mirroring Screen */
-        .mirroring-screen {
+        /* Screen Sharing Screen */
+        .screen-sharing-screen {
             display: none;
         }
 
-        .mirroring-header {
+        .sharing-header {
             background: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.1);
@@ -353,13 +423,13 @@
             align-items: center;
         }
 
-        .stream-info {
+        .sharing-info {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
 
-        .stream-avatar {
+        .sharing-avatar {
             width: 48px;
             height: 48px;
             border-radius: 50%;
@@ -370,17 +440,17 @@
             font-size: 1.25rem;
         }
 
-        .stream-details h3 {
+        .sharing-details h3 {
             font-weight: 600;
             margin-bottom: 0.25rem;
         }
 
-        .stream-details p {
+        .sharing-details p {
             font-size: 0.875rem;
             color: var(--text-secondary);
         }
 
-        .stream-controls {
+        .sharing-controls {
             display: flex;
             gap: 0.5rem;
         }
@@ -408,7 +478,11 @@
             background: var(--danger);
         }
 
-        /* Video Display */
+        .control-btn.active {
+            background: var(--success);
+        }
+
+        /* Video Container */
         .video-container {
             background: rgba(30, 41, 59, 0.3);
             border: 1px solid rgba(148, 163, 184, 0.1);
@@ -421,53 +495,54 @@
             position: relative;
         }
 
-        .video-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            width: 100%;
-            height: 100%;
-        }
-
         .video-wrapper {
-            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16/9;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
-            aspect-ratio: 16/9;
+            position: relative;
         }
 
-        .video-element {
+        #sharedScreen {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            display: none;
         }
 
-        .video-label {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .no-video {
+        .no-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
             color: var(--text-secondary);
+            text-align: center;
         }
 
-        .no-video-icon {
-            font-size: 4rem;
+        .no-screen-icon {
+            font-size: 5rem;
             margin-bottom: 1rem;
             opacity: 0.5;
+        }
+
+        .share-prompt {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1rem;
+        }
+
+        .share-prompt h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .share-prompt p {
+            margin-bottom: 1.5rem;
         }
 
         /* Stats */
@@ -496,70 +571,6 @@
         .stat-label {
             font-size: 0.875rem;
             color: var(--text-secondary);
-        }
-
-        /* Chat */
-        .chat-panel {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            height: 300px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-        }
-
-        .chat-message {
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            border-radius: 8px;
-        }
-
-        .chat-message.local {
-            background: rgba(99, 102, 241, 0.2);
-            text-align: right;
-        }
-
-        .chat-message.remote {
-            background: rgba(148, 163, 184, 0.1);
-        }
-
-        .chat-input-group {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 0.75rem;
-            background: var(--dark-tertiary);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 8px;
-            color: var(--text-primary);
-        }
-
-        .chat-send {
-            padding: 0.75rem 1.5rem;
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .chat-send:hover {
-            transform: translateY(-1px);
         }
 
         /* Notification */
@@ -636,15 +647,19 @@
                 padding: 2rem;
             }
 
+            .room-input-group {
+                flex-direction: column;
+            }
+
             .role-selection {
                 grid-template-columns: 1fr;
             }
 
-            .video-grid {
-                grid-template-columns: 1fr;
+            .action-buttons {
+                flex-direction: column;
             }
 
-            .mirroring-header {
+            .sharing-header {
                 flex-direction: column;
                 gap: 1rem;
             }
@@ -658,19 +673,24 @@
 <body>
     <!-- Background -->
     <div class="bg-container">
-        <div class="network-grid"></div>
+        <div class="network-animation" id="networkAnimation"></div>
     </div>
 
     <!-- Header -->
     <header>
         <div class="header-content">
             <div class="logo">
-                <i class="fas fa-globe"></i>
-                LiveStream Pro
+                <i class="fas fa-desktop"></i>
+                ScreenShare Live
             </div>
             <div class="connection-status">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">Offline</span>
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    <i class="fas fa-wifi"></i> Online
+                </div>
             </div>
         </div>
     </header>
@@ -681,103 +701,97 @@
         <section class="setup-screen" id="setupScreen">
             <div class="setup-card">
                 <div class="setup-icon">
-                    <i class="fas fa-video"></i>
+                    <i class="fas fa-share-square"></i>
                 </div>
-                <h1 class="setup-title">Real-Time Streaming</h1>
+                <h1 class="setup-title">Real-Time Screen Sharing</h1>
                 <p class="setup-description">
-                    Connect with anyone, anywhere. Share your screen or camera in real-time.
+                    Share your screen from client device to host in real-time. No installation required.
                 </p>
 
                 <!-- Room Section -->
                 <div class="room-section">
-                    <div class="room-label" style="color: var(--text-secondary); margin-bottom: 0.5rem;">Room ID</div>
-                    <input type="text" class="room-input" id="roomInput" placeholder="Enter room ID or create new">
-                    <div class="room-code" id="roomCode" style="display: none;"></div>
+                    <div class="room-label">Session Room</div>
+                    <div class="room-input-group">
+                        <input type="text" class="room-input" id="roomInput" placeholder="Enter room ID or create new">
+                        <button class="generate-btn" onclick="generateRoom()">
+                            <i class="fas fa-random"></i> Generate
+                        </button>
+                    </div>
+                    <div class="room-display" id="roomDisplay" style="display: none;">
+                        <div class="room-label">Your Room ID</div>
+                        <div class="room-code" id="roomCode"></div>
+                    </div>
                 </div>
 
                 <!-- Role Selection -->
                 <div class="role-selection">
-                    <div class="role-card" onclick="selectRole('broadcaster')" id="broadcasterRole">
+                    <div class="role-card" onclick="selectRole('host')" id="hostRole">
                         <div class="role-icon">
-                            <i class="fas fa-broadcast-tower"></i>
+                            <i class="fas fa-tv"></i>
                         </div>
-                        <div class="role-title">Broadcaster</div>
-                        <div class="role-desc">Share your screen/camera</div>
+                        <div class="role-title">Host</div>
+                        <div class="role-desc">Receive screen share from client</div>
                     </div>
-                    <div class="role-card" onclick="selectRole('viewer')" id="viewerRole">
+                    <div class="role-card" onclick="selectRole('client')" id="clientRole">
                         <div class="role-icon">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas fa-desktop"></i>
                         </div>
-                        <div class="role-title">Viewer</div>
-                        <div class="role-desc">Watch the stream</div>
+                        <div class="role-title">Client</div>
+                        <div class="role-desc">Share your screen to host</div>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="button-group">
-                    <button class="btn btn-primary" id="startBtn" onclick="startConnection()" disabled>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="startBtn" onclick="startSession()" disabled>
                         <i class="fas fa-play"></i>
-                        Start Streaming
+                        Start Session
                     </button>
-                    <button class="btn btn-secondary" onclick="generateRoom()">
-                        <i class="fas fa-random"></i>
-                        Generate Room
+                    <button class="btn btn-secondary" onclick="resetSession()">
+                        <i class="fas fa-redo"></i>
+                        Reset
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- Mirroring Screen -->
-        <section class="mirroring-screen" id="mirroringScreen">
-            <div class="mirroring-header">
-                <div class="stream-info">
-                    <div class="stream-avatar">
-                        <i class="fas fa-video"></i>
+        <!-- Screen Sharing Screen -->
+        <section class="screen-sharing-screen" id="screenSharingScreen">
+            <div class="sharing-header">
+                <div class="sharing-info">
+                    <div class="sharing-avatar">
+                        <i class="fas fa-desktop" id="roleIcon"></i>
                     </div>
-                    <div class="stream-details">
-                        <h3 id="streamTitle">Live Stream</h3>
-                        <p id="streamInfo">Room: <span id="currentRoom">-</span></p>
+                    <div class="sharing-details">
+                        <h3 id="sessionTitle">Screen Sharing Session</h3>
+                        <p>Room: <span id="currentRoom">-</span> | Role: <span id="currentRole">-</span></p>
                     </div>
                 </div>
-                <div class="stream-controls">
+                <div class="sharing-controls">
+                    <button class="control-btn" id="shareBtn" onclick="toggleScreenShare()" title="Share Screen">
+                        <i class="fas fa-desktop"></i>
+                    </button>
                     <button class="control-btn" onclick="toggleAudio()" title="Toggle Audio">
                         <i class="fas fa-microphone" id="audioIcon"></i>
-                    </button>
-                    <button class="control-btn" onclick="toggleVideo()" title="Toggle Video">
-                        <i class="fas fa-video" id="videoIcon"></i>
-                    </button>
-                    <button class="control-btn" onclick="shareScreen()" title="Share Screen">
-                        <i class="fas fa-desktop"></i>
                     </button>
                     <button class="control-btn" onclick="toggleFullscreen()" title="Fullscreen">
                         <i class="fas fa-expand"></i>
                     </button>
-                    <button class="control-btn danger" onclick="endStream()" title="End Stream">
+                    <button class="control-btn danger" onclick="endSession()" title="End Session">
                         <i class="fas fa-stop"></i>
                     </button>
                 </div>
             </div>
 
             <div class="video-container">
-                <div class="video-grid">
-                    <div class="video-wrapper">
-                        <video id="localVideo" class="video-element" autoplay muted playsinline></video>
-                        <div class="video-label">You</div>
-                        <div class="no-video" id="localNoVideo">
-                            <div class="no-video-icon">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <p>Camera off</p>
+                <div class="video-wrapper">
+                    <video id="sharedScreen" autoplay playsinline></video>
+                    <div class="no-screen" id="noScreen">
+                        <div class="no-screen-icon">
+                            <i class="fas fa-desktop"></i>
                         </div>
-                    </div>
-                    <div class="video-wrapper">
-                        <video id="remoteVideo" class="video-element" autoplay playsinline></video>
-                        <div class="video-label">Remote</div>
-                        <div class="no-video" id="remoteNoVideo">
-                            <div class="no-video-icon">
-                                <i class="fas fa-user-slash"></i>
-                            </div>
-                            <p>Waiting for remote...</p>
+                        <div id="promptContent">
+                            <!-- Dynamic content based on role -->
                         </div>
                     </div>
                 </div>
@@ -785,6 +799,10 @@
 
             <!-- Stats -->
             <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="resolutionStat">-</div>
+                    <div class="stat-label">Resolution</div>
+                </div>
                 <div class="stat-card">
                     <div class="stat-value" id="fpsStat">0</div>
                     <div class="stat-label">FPS</div>
@@ -794,28 +812,8 @@
                     <div class="stat-label">Kbps</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="latencyStat">0</div>
-                    <div class="stat-label">Latency (ms)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="timeStat">00:00</div>
+                    <div class="stat-value" id="durationStat">00:00</div>
                     <div class="stat-label">Duration</div>
-                </div>
-            </div>
-
-            <!-- Chat -->
-            <div class="chat-panel">
-                <h3 style="margin-bottom: 1rem;">Chat</h3>
-                <div class="chat-messages" id="chatMessages">
-                    <div class="chat-message">
-                        <small style="color: var(--text-secondary);">Welcome to the stream!</small>
-                    </div>
-                </div>
-                <div class="chat-input-group">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKeypress(event)">
-                    <button class="chat-send" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
                 </div>
             </div>
         </section>
@@ -837,59 +835,36 @@
         // Global Variables
         let selectedRole = null;
         let currentRoom = null;
-        let localStream = null;
-        let remoteStream = null;
         let peer = null;
-        let conn = null;
-        let isStreaming = false;
-        let audioEnabled = true;
-        let videoEnabled = true;
-        let streamStartTime = null;
+        let localStream = null;
+        let screenStream = null;
+        let isSharing = false;
+        let isAudioEnabled = true;
+        let sessionStartTime = null;
         let statsInterval = null;
-        let timeInterval = null;
+        let durationInterval = null;
+        let connections = new Map();
 
-        // Initialize PeerJS
-        function initializePeer() {
-            peer = new Peer({
-                debug: 2,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun3.l.google.com:19302' },
-                        { urls: 'stun:stun4.l.google.com:19302' }
-                    ]
-                }
-            });
-
-            peer.on('open', (id) => {
-                console.log('My peer ID is: ' + id);
-                updateStatus('Ready', false);
-            });
-
-            peer.on('connection', (connection) => {
-                conn = connection;
-                setupConnection();
-            });
-
-            peer.on('call', (call) => {
-                call.answer(localStream);
-                call.on('stream', (stream) => {
-                    remoteStream = stream;
-                    document.getElementById('remoteVideo').srcObject = stream;
-                    document.getElementById('remoteNoVideo').style.display = 'none';
-                });
-            });
+        // Initialize network animation
+        function createNetworkAnimation() {
+            const container = document.getElementById('networkAnimation');
+            for (let i = 0; i < 15; i++) {
+                const node = document.createElement('div');
+                node.className = 'network-node';
+                node.style.left = Math.random() * 100 + '%';
+                node.style.animationDelay = Math.random() * 20 + 's';
+                node.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(node);
+            }
         }
 
         // Generate Room ID
         function generateRoom() {
-            const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            document.getElementById('roomInput').value = roomCode;
-            document.getElementById('roomCode').textContent = roomCode;
-            document.getElementById('roomCode').style.display = 'block';
-            showNotification('info', 'Room Generated', `Room ID: ${roomCode}`);
+            const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+            document.getElementById('roomInput').value = roomId;
+            document.getElementById('roomCode').textContent = roomId;
+            document.getElementById('roomDisplay').style.display = 'block';
+            showNotification('info', 'Room Created', `Room ID: ${roomId}`);
         }
 
         // Select Role
@@ -903,7 +878,7 @@
             document.getElementById(role + 'Role').classList.add('selected');
             
             // Enable start button if room is entered
-            const roomInput = document.getElementById('roomInput').value;
+            const roomInput = document.getElementById('roomInput').value.trim();
             if (roomInput) {
                 document.getElementById('startBtn').disabled = false;
             }
@@ -911,8 +886,8 @@
             showNotification('info', 'Role Selected', `You are ${role}`);
         }
 
-        // Start Connection
-        async function startConnection() {
+        // Start Session
+        async function startSession() {
             const roomInput = document.getElementById('roomInput').value.trim();
             if (!roomInput || !selectedRole) {
                 showNotification('error', 'Error', 'Please enter room ID and select role');
@@ -924,209 +899,282 @@
             document.getElementById('statusDot').className = 'status-dot connecting';
 
             try {
-                // Initialize peer if not already done
-                if (!peer) {
-                    initializePeer();
-                }
+                // Initialize PeerJS
+                peer = new Peer({
+                    debug: 2,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' }
+                        ]
+                    }
+                });
 
-                // Get user media
-                await getUserMedia();
+                peer.on('open', (id) => {
+                    console.log('My peer ID is: ' + id);
+                    initializeSession();
+                });
 
-                if (selectedRole === 'broadcaster') {
-                    // Wait for viewer to connect
-                    showNotification('info', 'Waiting', 'Waiting for viewers to join...');
-                    document.getElementById('currentRoom').textContent = currentRoom;
-                    
-                    // Start streaming UI
-                    startStreamingUI();
-                    
-                    // Simulate viewer joining after 2 seconds for demo
-                    setTimeout(() => {
-                        simulateViewerJoin();
-                    }, 2000);
-                } else {
-                    // Connect to broadcaster
-                    connectToBroadcaster();
-                }
+                peer.on('connection', (conn) => {
+                    console.log('Received connection from:', conn.peer);
+                    connections.set(conn.peer, conn);
+                    setupConnection(conn);
+                });
 
-            } catch (error) {
-                console.error('Connection error:', error);
-                showNotification('error', 'Connection Failed', error.message);
-                updateStatus('Offline', false);
-            }
-        }
-
-        // Get User Media
-        async function getUserMedia() {
-            try {
-                const constraints = {
-                    video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: true
-                };
-
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById('localVideo').srcObject = localStream;
-                document.getElementById('localNoVideo').style.display = 'none';
-
-            } catch (error) {
-                console.error('Media error:', error);
-                // Fallback to screen share if camera fails
-                try {
-                    localStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: true,
-                        audio: true
+                peer.on('call', (call) => {
+                    console.log('Received call from:', call.peer);
+                    call.answer();
+                    call.on('stream', (stream) => {
+                        handleRemoteStream(stream);
                     });
-                    document.getElementById('localVideo').srcObject = localStream;
-                    document.getElementById('localNoVideo').style.display = 'none';
-                } catch (shareError) {
-                    throw new Error('Camera and screen sharing not available');
-                }
+                });
+
+            } catch (error) {
+                console.error('Failed to initialize peer:', error);
+                showNotification('error', 'Connection Failed', error.message);
+                updateStatus('Ready', false);
             }
         }
 
-        // Connect to Broadcaster
-        function connectToBroadcaster() {
-            // For demo, we'll simulate connection
-            // In real implementation, you'd use WebRTC signaling
-            showNotification('info', 'Connecting', 'Connecting to broadcaster...');
+        // Initialize Session
+        function initializeSession() {
+            sessionStartTime = Date.now();
             
-            setTimeout(() => {
-                startStreamingUI();
-                simulateBroadcasterStream();
-                showNotification('success', 'Connected', 'You are now watching the stream');
-            }, 2000);
-        }
-
-        // Simulate Viewer Join (for broadcaster)
-        function simulateViewerJoin() {
-            showNotification('success', 'Viewer Joined', 'Someone joined your stream');
-            updateStatus('Live', true);
-            startStatsUpdate();
-            startTimeUpdate();
-        }
-
-        // Simulate Broadcaster Stream (for viewer)
-        function simulateBroadcasterStream() {
-            // Create a canvas stream for demo
-            const canvas = document.createElement('canvas');
-            canvas.width = 1280;
-            canvas.height = 720;
-            const ctx = canvas.getContext('2d');
-
-            let frame = 0;
-            function draw() {
-                frame++;
-                
-                // Background
-                ctx.fillStyle = '#1e293b';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Content
-                const time = Date.now() / 1000;
-                ctx.fillStyle = '#6366f1';
-                ctx.font = 'bold 72px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('LIVE STREAMING', canvas.width / 2, canvas.height / 2 - 50);
-                
-                ctx.font = '36px Arial';
-                ctx.fillStyle = '#94a3b8';
-                ctx.fillText(`Frame: ${frame} | Time: ${new Date().toLocaleTimeString()}`, canvas.width / 2, canvas.height / 2 + 60);
-                
-                // Animated elements
-                for (let i = 0; i < 6; i++) {
-                    const angle = (i / 6) * Math.PI * 2 + time;
-                    const x = canvas.width / 2 + Math.cos(angle) * 200;
-                    const y = canvas.height / 2 + Math.sin(angle) * 150;
-                    
-                    ctx.beginPath();
-                    ctx.arc(x, y, 30, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsl(${i * 60 + frame * 2}, 70%, 50%)`;
-                    ctx.fill();
-                }
-                
-                requestAnimationFrame(draw);
-            }
-            
-            draw();
-            
-            const stream = canvas.captureStream(30);
-            document.getElementById('remoteVideo').srcObject = stream;
-            document.getElementById('remoteNoVideo').style.display = 'none';
-            
-            updateStatus('Live', true);
-            startStatsUpdate();
-            startTimeUpdate();
-        }
-
-        // Start Streaming UI
-        function startStreamingUI() {
-            isStreaming = true;
-            streamStartTime = Date.now();
-            
+            // Update UI
             document.getElementById('setupScreen').style.display = 'none';
-            document.getElementById('mirroringScreen').style.display = 'block';
+            document.getElementById('screenSharingScreen').style.display = 'block';
             document.getElementById('currentRoom').textContent = currentRoom;
+            document.getElementById('currentRole').textContent = selectedRole;
+            
+            // Set role-specific content
+            if (selectedRole === 'host') {
+                document.getElementById('roleIcon').className = 'fas fa-tv';
+                document.getElementById('sessionTitle').textContent = 'Host - Receiving Screen';
+                document.getElementById('promptContent').innerHTML = `
+                    <div class="share-prompt">
+                        <h3>Waiting for Client</h3>
+                        <p>Share this Room ID with the client: <strong>${currentRoom}</strong></p>
+                        <p>Waiting for client to start screen sharing...</p>
+                    </div>
+                `;
+                document.getElementById('shareBtn').style.display = 'none';
+            } else {
+                document.getElementById('roleIcon').className = 'fas fa-desktop';
+                document.getElementById('sessionTitle').textContent = 'Client - Sharing Screen';
+                document.getElementById('promptContent').innerHTML = `
+                    <div class="share-prompt">
+                        <h3>Start Screen Sharing</h3>
+                        <p>Click the Share Screen button to start sharing your screen with the host</p>
+                        <button class="btn btn-primary" onclick="toggleScreenShare()">
+                            <i class="fas fa-desktop"></i> Share Screen Now
+                        </button>
+                    </div>
+                `;
+            }
+            
+            updateStatus('Connected', true);
+            startStatsUpdate();
+            startDurationUpdate();
+            
+            showNotification('success', 'Session Started', `Connected to room ${currentRoom}`);
+        }
+
+        // Toggle Screen Share
+        async function toggleScreenShare() {
+            if (selectedRole !== 'client') {
+                showNotification('error', 'Not Allowed', 'Only client can share screen');
+                return;
+            }
+
+            if (!isSharing) {
+                try {
+                    // Start screen sharing
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: {
+                            cursor: 'always'
+                        },
+                        audio: false
+                    });
+
+                    // Add audio if enabled
+                    if (isAudioEnabled) {
+                        try {
+                            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                            audioStream.getAudioTracks().forEach(track => {
+                                screenStream.addTrack(track);
+                            });
+                        } catch (audioError) {
+                            console.log('Audio not available:', audioError);
+                        }
+                    }
+
+                    // Display local screen
+                    const video = document.getElementById('sharedScreen');
+                    video.srcObject = screenStream;
+                    video.style.display = 'block';
+                    document.getElementById('noScreen').style.display = 'none';
+
+                    // Update UI
+                    isSharing = true;
+                    document.getElementById('shareBtn').classList.add('active');
+                    document.getElementById('shareBtn').innerHTML = '<i class="fas fa-stop"></i>';
+
+                    // Update prompt
+                    document.getElementById('promptContent').innerHTML = `
+                        <div style="text-align: center;">
+                            <h3 style="color: var(--success);">Screen Sharing Active</h3>
+                            <p>Your screen is being shared with the host</p>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary);">
+                                Stop sharing to end the session
+                            </p>
+                        </div>
+                    `;
+
+                    // Share with all connected peers
+                    shareScreenWithPeers();
+
+                    // Handle screen share end
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        stopScreenShare();
+                    };
+
+                    // Update resolution
+                    const videoTrack = screenStream.getVideoTracks()[0];
+                    const settings = videoTrack.getSettings();
+                    document.getElementById('resolutionStat').textContent = 
+                        `${settings.width}x${settings.height}`;
+
+                    showNotification('success', 'Screen Sharing Started', 'Your screen is now being shared');
+
+                } catch (error) {
+                    console.error('Failed to share screen:', error);
+                    showNotification('error', 'Screen Share Failed', error.message);
+                }
+            } else {
+                stopScreenShare();
+            }
+        }
+
+        // Stop Screen Share
+        function stopScreenShare() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+            }
+
+            isSharing = false;
+            document.getElementById('shareBtn').classList.remove('active');
+            document.getElementById('shareBtn').innerHTML = '<i class="fas fa-desktop"></i>';
+            document.getElementById('sharedScreen').style.display = 'none';
+            document.getElementById('noScreen').style.display = 'flex';
+
+            // Update prompt
+            document.getElementById('promptContent').innerHTML = `
+                <div class="share-prompt">
+                    <h3>Screen Sharing Stopped</h3>
+                    <p>Click Share Screen to start sharing again</p>
+                    <button class="btn btn-primary" onclick="toggleScreenShare()">
+                        <i class="fas fa-desktop"></i> Share Screen Again
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('resolutionStat').textContent = '-';
+
+            showNotification('info', 'Screen Sharing Stopped', 'Screen sharing has been stopped');
+        }
+
+        // Share Screen with Peers
+        function shareScreenWithPeers() {
+            if (!screenStream) return;
+
+            connections.forEach((conn, peerId) => {
+                const call = peer.call(peerId, screenStream);
+                call.on('error', (err) => {
+                    console.error('Call error:', err);
+                });
+            });
+        }
+
+        // Handle Remote Stream
+        function handleRemoteStream(stream) {
+            if (selectedRole === 'host') {
+                const video = document.getElementById('sharedScreen');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('noScreen').style.display = 'none';
+
+                // Update prompt
+                document.getElementById('promptContent').innerHTML = `
+                    <div style="text-align: center;">
+                        <h3 style="color: var(--success);">Receiving Screen Share</h3>
+                        <p>Client is sharing their screen</p>
+                    </div>
+                `;
+
+                // Get video track settings
+                const videoTrack = stream.getVideoTracks()[0];
+                if (videoTrack) {
+                    const settings = videoTrack.getSettings();
+                    document.getElementById('resolutionStat').textContent = 
+                        `${settings.width}x${settings.height}`;
+                }
+
+                showNotification('success', 'Screen Share Received', 'Client started sharing their screen');
+            }
+        }
+
+        // Setup Connection
+        function setupConnection(conn) {
+            conn.on('data', (data) => {
+                console.log('Received data:', data);
+                handleSignalingMessage(data);
+            });
+
+            conn.on('close', () => {
+                console.log('Connection closed:', conn.peer);
+                connections.delete(conn.peer);
+                
+                if (selectedRole === 'host' && connections.size === 0) {
+                    document.getElementById('sharedScreen').style.display = 'none';
+                    document.getElementById('noScreen').style.display = 'flex';
+                    document.getElementById('promptContent').innerHTML = `
+                        <div class="share-prompt">
+                            <h3>Client Disconnected</h3>
+                            <p>Waiting for client to reconnect...</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Handle Signaling Message
+        function handleSignalingMessage(data) {
+            // Handle various signaling messages
+            switch(data.type) {
+                case 'screen-share-started':
+                    if (selectedRole === 'host') {
+                        showNotification('info', 'Client Started Sharing', 'Client is sharing their screen');
+                    }
+                    break;
+                case 'screen-share-stopped':
+                    if (selectedRole === 'host') {
+                        document.getElementById('sharedScreen').style.display = 'none';
+                        document.getElementById('noScreen').style.display = 'flex';
+                        showNotification('info', 'Client Stopped Sharing', 'Client stopped sharing their screen');
+                    }
+                    break;
+            }
         }
 
         // Toggle Audio
         function toggleAudio() {
-            if (localStream) {
-                audioEnabled = !audioEnabled;
-                localStream.getAudioTracks().forEach(track => {
-                    track.enabled = audioEnabled;
-                });
-                
-                const icon = document.getElementById('audioIcon');
-                icon.className = audioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash';
-                showNotification('info', 'Audio', audioEnabled ? 'Audio enabled' : 'Audio muted');
-            }
-        }
-
-        // Toggle Video
-        function toggleVideo() {
-            if (localStream) {
-                videoEnabled = !videoEnabled;
-                localStream.getVideoTracks().forEach(track => {
-                    track.enabled = videoEnabled;
-                });
-                
-                const icon = document.getElementById('videoIcon');
-                icon.className = videoEnabled ? 'fas fa-video' : 'fas fa-video-slash';
-                document.getElementById('localNoVideo').style.display = videoEnabled ? 'none' : 'flex';
-                showNotification('info', 'Video', videoEnabled ? 'Video enabled' : 'Video disabled');
-            }
-        }
-
-        // Share Screen
-        async function shareScreen() {
-            try {
-                const screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true,
-                    audio: true
-                });
-                
-                // Replace video track
-                if (localStream) {
-                    localStream.getVideoTracks().forEach(track => track.stop());
-                }
-                
-                localStream = screenStream;
-                document.getElementById('localVideo').srcObject = screenStream;
-                document.getElementById('localNoVideo').style.display = 'none';
-                
-                showNotification('success', 'Screen Share', 'Now sharing your screen');
-                
-                // Handle screen share end
-                screenStream.getVideoTracks()[0].onended = () => {
-                    getUserMedia();
-                };
-                
-            } catch (error) {
-                showNotification('error', 'Screen Share Failed', error.message);
-            }
+            isAudioEnabled = !isAudioEnabled;
+            const icon = document.getElementById('audioIcon');
+            icon.className = isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash';
+            
+            showNotification('info', 'Audio', isAudioEnabled ? 'Audio enabled' : 'Audio disabled');
         }
 
         // Toggle Fullscreen
@@ -1139,100 +1187,98 @@
             }
         }
 
-        // End Stream
-        function endStream() {
-            if (confirm('Are you sure you want to end the stream?')) {
+        // End Session
+        function endSession() {
+            if (confirm('Are you sure you want to end the session?')) {
                 cleanup();
-                showNotification('info', 'Stream Ended', 'The stream has been ended');
+                showNotification('info', 'Session Ended', 'The screen sharing session has ended');
             }
         }
 
-        // Send Message
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (message) {
-                addChatMessage(message, true);
-                input.value = '';
-                
-                // Simulate response
-                setTimeout(() => {
-                    const responses = [
-                        'Great stream!',
-                        'Hello there!',
-                        'Nice quality!',
-                        'Thanks for sharing!',
-                        'Looking good!'
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addChatMessage(randomResponse, false);
-                }, 1000 + Math.random() * 2000);
-            }
+        // Reset Session
+        function resetSession() {
+            cleanup();
+            showNotification('info', 'Session Reset', 'Ready to start a new session');
         }
 
-        // Handle Chat Keypress
-        function handleChatKeypress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
+        // Cleanup
+        function cleanup() {
+            // Stop screen sharing
+            if (isSharing) {
+                stopScreenShare();
             }
-        }
 
-        // Add Chat Message
-        function addChatMessage(message, isLocal) {
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${isLocal ? 'local' : 'remote'}`;
-            messageDiv.innerHTML = `
-                <strong>${isLocal ? 'You' : 'Remote'}:</strong> ${message}
-                <br><small style="color: var(--text-secondary);">${new Date().toLocaleTimeString()}</small>
-            `;
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            // Close peer connections
+            connections.forEach((conn) => {
+                conn.close();
+            });
+            connections.clear();
+
+            // Destroy peer
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+
+            // Clear intervals
+            if (statsInterval) clearInterval(statsInterval);
+            if (durationInterval) clearInterval(durationInterval);
+
+            // Reset variables
+            selectedRole = null;
+            currentRoom = null;
+            isSharing = false;
+            sessionStartTime = null;
+
+            // Reset UI
+            updateStatus('Ready', false);
+            document.getElementById('setupScreen').style.display = 'flex';
+            document.getElementById('screenSharingScreen').style.display = 'none';
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('roomInput').value = '';
+            document.getElementById('roomDisplay').style.display = 'none';
+            document.getElementById('sharedScreen').style.display = 'none';
+            document.getElementById('noScreen').style.display = 'flex';
+            document.getElementById('resolutionStat').textContent = '-';
+            document.getElementById('fpsStat').textContent = '0';
+            document.getElementById('bitrateStat').textContent = '0';
+            document.getElementById('durationStat').textContent = '00:00';
+
+            // Reset role selection
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
         }
 
         // Start Stats Update
         function startStatsUpdate() {
             statsInterval = setInterval(() => {
-                if (isStreaming) {
+                if (isSharing) {
                     document.getElementById('fpsStat').textContent = Math.floor(25 + Math.random() * 10);
-                    document.getElementById('bitrateStat').textContent = Math.floor(500 + Math.random() * 1500);
-                    document.getElementById('latencyStat').textContent = Math.floor(20 + Math.random() * 50);
+                    document.getElementById('bitrateStat').textContent = Math.floor(1000 + Math.random() * 2000);
                 }
             }, 1000);
         }
 
-        // Start Time Update
-        function startTimeUpdate() {
-            timeInterval = setInterval(() => {
-                if (streamStartTime) {
-                    const elapsed = Date.now() - streamStartTime;
+        // Start Duration Update
+        function startDurationUpdate() {
+            durationInterval = setInterval(() => {
+                if (sessionStartTime) {
+                    const elapsed = Date.now() - sessionStartTime;
                     const minutes = Math.floor(elapsed / 60000);
                     const seconds = Math.floor((elapsed % 60000) / 1000);
-                    document.getElementById('timeStat').textContent = 
+                    document.getElementById('durationStat').textContent = 
                         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }
             }, 1000);
         }
 
-        // Setup Connection
-        function setupConnection() {
-            conn.on('data', (data) => {
-                console.log('Received data:', data);
-            });
-
-            conn.on('close', () => {
-                console.log('Connection closed');
-                updateStatus('Offline', false);
-            });
-        }
-
         // Update Status
-        function updateStatus(text, online) {
+        function updateStatus(text, connected) {
             document.getElementById('statusText').textContent = text;
             const dot = document.getElementById('statusDot');
-            if (online) {
-                dot.className = 'status-dot online';
+            if (connected) {
+                dot.className = 'status-dot connected';
             } else {
                 dot.className = 'status-dot';
             }
@@ -1268,42 +1314,6 @@
             }, 3000);
         }
 
-        // Cleanup
-        function cleanup() {
-            isStreaming = false;
-            
-            // Stop streams
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            if (remoteStream) {
-                remoteStream.getTracks().forEach(track => track.stop());
-                remoteStream = null;
-            }
-            
-            // Clear intervals
-            if (statsInterval) clearInterval(statsInterval);
-            if (timeInterval) clearInterval(timeInterval);
-            
-            // Close peer connection
-            if (peer) {
-                peer.destroy();
-                peer = null;
-            }
-            
-            // Reset UI
-            updateStatus('Offline', false);
-            document.getElementById('setupScreen').style.display = 'flex';
-            document.getElementById('mirroringScreen').style.display = 'none';
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('localVideo').srcObject = null;
-            document.getElementById('remoteVideo').srcObject = null;
-            document.getElementById('localNoVideo').style.display = 'flex';
-            document.getElementById('remoteNoVideo').style.display = 'flex';
-        }
-
         // Room input handler
         document.getElementById('roomInput').addEventListener('input', (e) => {
             if (e.target.value.trim() && selectedRole) {
@@ -1313,9 +1323,10 @@
             }
         });
 
-        // Initialize on load
+        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            updateStatus('Offline', false);
+            createNetworkAnimation();
+            updateStatus('Ready', false);
         });
 
         // Cleanup on unload
@@ -1325,22 +1336,24 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && isStreaming) {
-                endStream();
+            if (e.key === 'Escape' && isSharing) {
+                stopScreenShare();
+            }
+            if (e.key === 'F11') {
+                e.preventDefault();
+                toggleFullscreen();
             }
             if (e.ctrlKey || e.metaKey) {
                 switch(e.key) {
-                    case 'm':
-                        e.preventDefault();
-                        toggleAudio();
-                        break;
-                    case 'v':
-                        e.preventDefault();
-                        toggleVideo();
-                        break;
                     case 's':
                         e.preventDefault();
-                        shareScreen();
+                        if (selectedRole === 'client') {
+                            toggleScreenShare();
+                        }
+                        break;
+                    case 'a':
+                        e.preventDefault();
+                        toggleAudio();
                         break;
                 }
             }
