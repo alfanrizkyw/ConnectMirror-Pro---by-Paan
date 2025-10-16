@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MirrorSync Pro - Real Device Mirroring</title>
+    <title>USBCast Pro - Kabel Data Mirroring</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -13,26 +13,27 @@
         }
 
         :root {
-            --primary: #3b82f6;
-            --secondary: #8b5cf6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #0f172a;
-            --dark-secondary: #1e293b;
-            --dark-tertiary: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --primary: #00d4ff;
+            --secondary: #0099cc;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+            --dark: #0a0e1a;
+            --dark-secondary: #141824;
+            --dark-tertiary: #1e2433;
+            --text-primary: #ffffff;
+            --text-secondary: #8892b0;
+            --usb-blue: #0099ff;
+            --gradient-usb: linear-gradient(135deg, #0099ff 0%, #00d4ff 100%);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--dark);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
         /* Animated Background */
@@ -42,31 +43,67 @@
             height: 100%;
             top: 0;
             left: 0;
-            z-index: -1;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            z-index: -2;
+            background: linear-gradient(135deg, #0a0e1a 0%, #141824 50%, #0a0e1a 100%);
         }
 
-        .bg-grid {
+        .circuit-pattern {
             position: absolute;
             width: 100%;
             height: 100%;
+            opacity: 0.1;
             background-image: 
-                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: grid-move 20s linear infinite;
+                linear-gradient(var(--usb-blue) 1px, transparent 1px),
+                linear-gradient(90deg, var(--usb-blue) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: circuit-move 10s linear infinite;
         }
 
-        @keyframes grid-move {
+        @keyframes circuit-move {
             0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        /* USB Particles */
+        .usb-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .data-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--primary);
+            animation: data-flow 3s linear infinite;
+        }
+
+        @keyframes data-flow {
+            0% {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(calc(100vw + 100px));
+                opacity: 0;
+            }
         }
 
         /* Header */
         header {
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(20, 24, 36, 0.9);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             padding: 1rem 2rem;
             position: sticky;
             top: 0;
@@ -74,7 +111,7 @@
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -87,392 +124,337 @@
             gap: 0.75rem;
             font-size: 1.5rem;
             font-weight: 700;
-            background: var(--gradient-primary);
+            background: var(--gradient-usb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        .usb-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(30, 36, 51, 0.5);
+            border-radius: 50px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
         }
 
         .status-indicator {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(51, 65, 85, 0.5);
-            border-radius: 100px;
-            font-size: 0.875rem;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
+        .status-led {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--text-secondary);
             transition: all 0.3s ease;
         }
 
-        .status-dot.active {
+        .status-led.connected {
             background: var(--success);
             box-shadow: 0 0 10px var(--success);
-            animation: pulse 2s infinite;
+            animation: led-pulse 2s infinite;
         }
 
-        @keyframes pulse {
+        .status_led.connecting {
+            background: var(--warning);
+            animation: led-blink 1s infinite;
+        }
+
+        @keyframes led-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
 
+        @keyframes led-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         /* Main Container */
         .main-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        /* Setup Screen */
-        .setup-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 100px);
-        }
-
-        .setup-card {
-            background: rgba(30, 41, 59, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 24px;
-            padding: 3rem;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .setup-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .setup-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .setup-description {
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        /* Role Selection */
-        .role-selection {
+        /* USB Connection Interface */
+        .usb-interface {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 2rem;
             margin-bottom: 2rem;
         }
 
-        .role-card {
-            padding: 1.5rem;
-            background: var(--dark-tertiary);
-            border: 2px solid transparent;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .role-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .role-card.selected {
-            border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        .role-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        .role-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .role-desc {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Code Section */
-        .code-section {
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .code-display {
-            background: var(--dark-tertiary);
-            border: 2px solid rgba(59, 130, 246, 0.3);
-            border-radius: 16px;
+        .connection-panel {
+            background: rgba(30, 36, 51, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
             padding: 2rem;
-            margin: 2rem 0;
             position: relative;
             overflow: hidden;
         }
 
-        .code-display::before {
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        /* USB Port Visualization */
+        .usb-port {
+            width: 200px;
+            height: 100px;
+            background: linear-gradient(135deg, #2a3f5f 0%, #1e293b 100%);
+            border-radius: 10px;
+            margin: 2rem auto;
+            position: relative;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .usb-port.connected {
+            background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+            border-color: var(--success);
+            animation: port-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes port-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
+        }
+
+        .usb-connector {
+            width: 60px;
+            height: 40px;
+            background: #1a1a2e;
+            border-radius: 5px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .usb-pins {
+            display: flex;
+            gap: 3px;
+        }
+
+        .usb-pin {
+            width: 3px;
+            height: 20px;
+            background: var(--text-secondary);
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .usb-port.connected .usb-pin {
+            background: var(--dark);
+            box-shadow: 0 0 5px var(--primary);
+        }
+
+        /* Device Info */
+        .device-info {
+            background: rgba(42, 54, 71, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .device-specs {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(30, 36, 51, 0.5);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .spec-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .spec-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .spec-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Connection Cable Animation */
+        .cable-connection {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .cable-connection.active {
+            opacity: 1;
+            animation: cable-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes cable-pulse {
+            0%, 100% { 
+                box-shadow: 0 0 10px var(--primary);
+                transform: translate(-50%, -50%) scaleX(1);
+            }
+            50% { 
+                box-shadow: 0 0 30px var(--primary);
+                transform: translate(-50%, -50%) scaleX(1.1);
+            }
+        }
+
+        /* Control Buttons */
+        .control-section {
+            background: rgba(30, 36, 51, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .control-btn {
+            padding: 1rem 1.5rem;
+            background: rgba(42, 54, 71, 0.5);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
-            animation: scan 3s linear infinite;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+            transition: left 0.5s ease;
         }
 
-        @keyframes scan {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        .control-btn:hover::before {
+            left: 100%;
         }
 
-        .code-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .code-value {
-            font-size: 3rem;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 0.5em;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            z-index: 1;
-        }
-
-        .code-input-container {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-
-        .code-input {
-            width: 70px;
-            height: 80px;
-            font-size: 2rem;
-            text-align: center;
-            background: var(--dark-tertiary);
-            border: 2px solid rgba(148, 163, 184, 0.2);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .code-input:focus {
-            outline: none;
+        .control-btn:hover {
             border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.1);
-            transform: scale(1.05);
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        .code-input.filled {
-            border-color: var(--success);
-            background: rgba(16, 185, 129, 0.1);
+        .control-btn.active {
+            background: var(--gradient-usb);
+            border-color: var(--primary);
         }
 
-        .code-input.error {
-            border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.1);
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        /* Connection Status */
-        .connection-status {
-            background: rgba(51, 65, 85, 0.3);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            display: none;
-        }
-
-        .connection-status.show {
-            display: block;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .status-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(59, 130, 246, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            color: var(--primary);
-        }
-
-        .status-text {
-            text-align: left;
-        }
-
-        .status-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .status-desc {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Buttons */
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 2rem;
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn:disabled {
+        .control-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-primary);
-            border: 2px solid rgba(148, 163, 184, 0.2);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: rgba(148, 163, 184, 0.1);
-            border-color: var(--primary);
-        }
-
-        /* Mirroring Screen */
-        .mirroring-screen {
-            display: none;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .mirroring-header {
-            background: rgba(30, 41, 59, 0.5);
+        /* Mirroring Display */
+        .mirroring-display {
+            background: rgba(30, 36, 51, 0.5);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            display: none;
+        }
+
+        .mirroring-display.active {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .display-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 1.5rem;
         }
 
-        .device-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .device-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .display-title {
             font-size: 1.25rem;
-        }
-
-        .device-details h3 {
             font-weight: 600;
-            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .device-details p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .control-buttons {
+        .display-controls {
             display: flex;
             gap: 0.5rem;
         }
 
-        .control-btn {
-            width: 44px;
-            height: 44px;
+        .display-btn {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: rgba(148, 163, 184, 0.1);
-            border: none;
+            background: rgba(42, 54, 71, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             color: var(--text-primary);
             cursor: pointer;
             transition: all 0.3s ease;
@@ -481,55 +463,42 @@
             justify-content: center;
         }
 
-        .control-btn:hover {
+        .display-btn:hover {
             background: var(--primary);
             transform: scale(1.1);
         }
 
-        .control-btn.danger:hover {
-            background: var(--danger);
-        }
-
-        /* Screen Display */
-        .screen-display {
-            background: rgba(30, 41, 59, 0.3);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 16px;
-            padding: 1rem;
-            min-height: 500px;
+        .screen-container {
+            background: #000;
+            border-radius: 12px;
+            aspect-ratio: 16/9;
+            position: relative;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
-        #remoteVideo {
+        #mirroredScreen {
             width: 100%;
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            background: #000;
+            height: 100%;
+            object-fit: contain;
             display: none;
         }
 
-        .waiting-message {
+        .no-signal {
             text-align: center;
             color: var(--text-secondary);
         }
 
-        .waiting-icon {
+        .no-signal-icon {
             font-size: 4rem;
             margin-bottom: 1rem;
-            animation: spin 2s linear infinite;
+            opacity: 0.5;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Stats */
-        .stats-grid {
+        /* Transfer Stats */
+        .transfer-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
@@ -537,91 +506,39 @@
         }
 
         .stat-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(148, 163, 184, 0.1);
+            background: rgba(42, 54, 71, 0.3);
             border-radius: 12px;
             padding: 1.5rem;
             text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.3s ease;
         }
 
-        .stat-value {
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .stat-icon {
             font-size: 2rem;
-            font-weight: 700;
             color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: var(--dark-secondary);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            min-width: 300px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 2000;
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .toast.success {
-            border-left: 4px solid var(--success);
-        }
-
-        .toast.error {
-            border-left: 4px solid var(--danger);
-        }
-
-        .toast.warning {
-            border-left: 4px solid var(--warning);
-        }
-
-        .toast-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .toast-icon {
-            font-size: 1.25rem;
-        }
-
-        .toast.success .toast-icon {
-            color: var(--success);
-        }
-
-        .toast.error .toast-icon {
-            color: var(--danger);
-        }
-
-        .toast.warning .toast-icon {
-            color: var(--warning);
-        }
-
-        .toast-text h4 {
-            font-weight: 600;
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
             margin-bottom: 0.25rem;
         }
 
-        .toast-text p {
-            font-size: 0.875rem;
+        .stat-label {
+            font-size: 0.9rem;
             color: var(--text-secondary);
         }
 
-        /* Loading Overlay */
-        .loading-overlay {
+        /* USB Detection Modal */
+        .detection-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -631,58 +548,147 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 3000;
+            z-index: 2000;
         }
 
-        .loading-overlay.show {
+        .detection-modal.show {
             display: flex;
         }
 
-        .loading-content {
+        .detection-content {
+            background: var(--dark-secondary);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
             text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+        .detection-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .detection-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .detection-message {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .detection-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .detection-progress-bar {
+            height: 100%;
+            background: var(--gradient-usb);
+            border-radius: 3px;
+            animation: progress-load 3s ease-out;
+        }
+
+        @keyframes progress-load {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--dark-secondary);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            min-width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+        }
+
+        .notification-toast.show {
+            transform: translateX(0);
+        }
+
+        .notification-toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification-toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification-toast.info {
+            border-left: 4px solid var(--primary);
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-icon {
+            font-size: 1.25rem;
+        }
+
+        .notification-toast.success .notification-icon {
+            color: var(--success);
+        }
+
+        .notification-toast.error .notification-icon {
+            color: var(--danger);
+        }
+
+        .notification-toast.info .notification-icon {
+            color: var(--primary);
+        }
+
+        .notification-text h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-text p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .main-container {
-                padding: 1rem;
-            }
-
-            .setup-card {
-                padding: 2rem;
-            }
-
-            .role-selection {
+            .usb-interface {
                 grid-template-columns: 1fr;
             }
 
-            .code-value {
-                font-size: 2rem;
+            .control-buttons {
+                grid-template-columns: 1fr;
             }
 
-            .code-input {
-                width: 60px;
-                height: 70px;
-                font-size: 1.5rem;
-            }
-
-            .mirroring-header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .stats-grid {
+            .transfer-stats {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .main-container {
+                padding: 1rem;
             }
         }
     </style>
@@ -690,496 +696,418 @@
 <body>
     <!-- Background -->
     <div class="bg-container">
-        <div class="bg-grid"></div>
+        <div class="circuit-pattern"></div>
     </div>
+    <div class="usb-particles" id="usbParticles"></div>
 
     <!-- Header -->
     <header>
         <div class="header-content">
             <div class="logo">
-                <i class="fas fa-link"></i>
-                MirrorSync Pro
+                <i class="fas fa-usb"></i>
+                USBCast Pro
             </div>
-            <div class="status-indicator">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">Ready</span>
+            <div class="usb-status">
+                <div class="status-indicator">
+                    <div class="status-led" id="statusLed"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    <i class="fas fa-microchip"></i> USB 3.2
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="main-container">
-        <!-- Setup Screen -->
-        <section class="setup-screen" id="setupScreen">
-            <div class="setup-card">
-                <div class="setup-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <h1 class="setup-title">Device Mirroring</h1>
-                <p class="setup-description">
-                    Hubungkan dua device secara real-time dengan kode 4 digit
-                </p>
-
-                <!-- Role Selection -->
-                <div class="role-selection">
-                    <div class="role-card" onclick="selectRole('host')" id="hostRole">
-                        <div class="role-icon">
-                            <i class="fas fa-tv"></i>
-                        </div>
-                        <div class="role-title">Host</div>
-                        <div class="role-desc">Menerima tampilan</div>
+        <!-- USB Connection Interface -->
+        <section class="usb-interface">
+            <!-- Source Device -->
+            <div class="connection-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-mobile-alt panel-icon"></i>
+                        Source Device
                     </div>
-                    <div class="role-card" onclick="selectRole('client')" id="clientRole">
-                        <div class="role-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <div class="role-title">Client</div>
-                        <div class="role-desc">Mengirim tampilan</div>
+                    <div class="status-indicator">
+                        <div class="status-led" id="sourceLed"></div>
+                        <span id="sourceStatus">Disconnected</span>
                     </div>
                 </div>
 
-                <!-- Code Section -->
-                <div class="code-section" id="codeSection">
-                    <!-- Host Code Display -->
-                    <div id="hostSection" style="display: none;">
-                        <div class="code-display">
-                            <div class="code-label">Kode Koneksi Anda</div>
-                            <div class="code-value" id="hostCode">----</div>
-                        </div>
-                        <div class="connection-status" id="hostStatus">
-                            <div class="status-item">
-                                <div class="status-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="status-text">
-                                    <div class="status-title">Menunggu Koneksi</div>
-                                    <div class="status-desc">Siap menerima koneksi dari device lain</div>
-                                </div>
-                            </div>
+                <div class="usb-port" id="sourcePort">
+                    <div class="usb-connector">
+                        <div class="usb-pins">
+                            <div class="usb-pin"></div>
+                            <div class="usb-pin"></div>
+                            <div class="usb-pin"></div>
+                            <div class="usb-pin"></div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Client Code Input -->
-                    <div id="clientSection" style="display: none;">
-                        <div class="code-label">Masukkan Kode</div>
-                        <div class="code-input-container">
-                            <input type="text" class="code-input" maxlength="1" id="code1" onkeyup="handleCodeInput(1)">
-                            <input type="text" class="code-input" maxlength="1" id="code2" onkeyup="handleCodeInput(2)">
-                            <input type="text" class="code-input" maxlength="1" id="code3" onkeyup="handleCodeInput(3)">
-                            <input type="text" class="code-input" maxlength="1" id="code4" onkeyup="handleCodeInput(4)">
+                <div class="device-info">
+                    <h3 style="margin-bottom: 1rem;">Device Information</h3>
+                    <div class="device-specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Device Type</span>
+                            <span class="spec-value" id="sourceType">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">USB Version</span>
+                            <span class="spec-value" id="sourceUsbVersion">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Transfer Speed</span>
+                            <span class="spec-value" id="sourceSpeed">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Battery</span>
+                            <span class="spec-value" id="sourceBattery">-</span>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Action Buttons -->
-                    <div class="button-group">
-                        <button class="btn btn-primary" id="connectBtn" onclick="handleConnect()">
-                            <i class="fas fa-play"></i>
-                            <span id="connectBtnText">Mulai</span>
-                        </button>
-                        <button class="btn btn-secondary" onclick="resetAll()">
-                            <i class="fas fa-redo"></i>
-                            Reset
-                        </button>
+            <!-- Cable Connection -->
+            <div class="cable-connection" id="cableConnection">
+                <i class="fas fa-bolt" style="color: var(--primary);"></i>
+            </div>
+
+            <!-- Target Device -->
+            <div class="connection-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-desktop panel-icon"></i>
+                        Target Device
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-led" id="targetLed"></div>
+                        <span id="targetStatus">Disconnected</span>
+                    </div>
+                </div>
+
+                <div class="usb-port" id="targetPort">
+                    <div class="usb-connector">
+                        <div class="usb-pins">
+                            <div class="usb-pin"></div>
+                            <div class="usb-pin"></div>
+                            <div class="usb-pin"></div>
+                            <div class="usb-pin"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-info">
+                    <h3 style="margin-bottom: 1rem;">Device Information</h3>
+                    <div class="device-specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Device Type</span>
+                            <span class="spec-value" id="targetType">PC/Laptop</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">USB Version</span>
+                            <span class="spec-value" id="targetUsbVersion">USB 3.2</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Transfer Speed</span>
+                            <span class="spec-value" id="targetSpeed">5 Gbps</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Port Type</span>
+                            <span class="spec-value" id="targetPortType">Type-C</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Mirroring Screen -->
-        <section class="mirroring-screen" id="mirroringScreen">
-            <div class="mirroring-header">
-                <div class="device-info">
-                    <div class="device-avatar">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <div class="device-details">
-                        <h3 id="deviceName">Connected Device</h3>
-                        <p id="deviceStatus">Connection Active</p>
-                    </div>
+        <!-- Control Section -->
+        <section class="control-section">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">USB Controls</h2>
+            <div class="control-buttons">
+                <button class="control-btn" id="detectBtn" onclick="detectUSBDevice()">
+                    <i class="fas fa-search"></i>
+                    Detect Device
+                </button>
+                <button class="control-btn" id="connectBtn" onclick="connectUSB()" disabled>
+                    <i class="fas fa-link"></i>
+                    Connect
+                </button>
+                <button class="control-btn" id="mirrorBtn" onclick="startMirroring()" disabled>
+                    <i class="fas fa-tv"></i>
+                    Start Mirroring
+                </button>
+                <button class="control-btn" id="recordBtn" onclick="toggleRecording()" disabled>
+                    <i class="fas fa-record-vinyl"></i>
+                    Record
+                </button>
+                <button class="control-btn" onclick="openTransferSettings()">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </button>
+                <button class="control-btn" onclick="disconnectUSB()" id="disconnectBtn" disabled>
+                    <i class="fas fa-unlink"></i>
+                    Disconnect
+                </button>
+            </div>
+        </section>
+
+        <!-- Mirroring Display -->
+        <section class="mirroring-display" id="mirroringDisplay">
+            <div class="display-header">
+                <div class="display-title">
+                    <i class="fas fa-tv"></i>
+                    Mirrored Display
                 </div>
-                <div class="control-buttons">
-                    <button class="control-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                <div class="display-controls">
+                    <button class="display-btn" onclick="toggleFullscreen()" title="Fullscreen">
                         <i class="fas fa-expand"></i>
                     </button>
-                    <button class="control-btn" onclick="toggleAudio()" title="Audio">
-                        <i class="fas fa-volume-up" id="audioBtn"></i>
+                    <button class="display-btn" onclick="toggleAudio()" title="Audio">
+                        <i class="fas fa-volume-up" id="audioIcon"></i>
                     </button>
-                    <button class="control-btn danger" onclick="disconnect()" title="Disconnect">
-                        <i class="fas fa-phone-slash"></i>
+                    <button class="display-btn" onclick="takeScreenshot()" title="Screenshot">
+                        <i class="fas fa-camera"></i>
                     </button>
                 </div>
             </div>
 
-            <div class="screen-display">
-                <video id="remoteVideo" autoplay playsinline></video>
-                <div class="waiting-message" id="waitingMessage">
-                    <div class="waiting-icon">
-                        <i class="fas fa-spinner"></i>
+            <div class="screen-container">
+                <video id="mirroredScreen" autoplay playsinline></video>
+                <canvas id="screenCanvas" style="display: none;"></canvas>
+                <div class="no-signal" id="noSignal">
+                    <div class="no-signal-icon">
+                        <i class="fas fa-usb"></i>
                     </div>
-                    <p>Menunggu tampilan dari device...</p>
+                    <p>Connect USB device to start mirroring</p>
                 </div>
             </div>
 
-            <div class="stats-grid">
+            <!-- Transfer Stats -->
+            <div class="transfer-stats">
                 <div class="stat-card">
-                    <div class="stat-value" id="fpsStat">30</div>
-                    <div class="stat-label">FPS</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="stat-value" id="transferSpeed">0</div>
+                    <div class="stat-label">MB/s</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="resolutionStat">1920x1080</div>
-                    <div class="stat-label">Resolution</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                    <div class="stat-value" id="dataTransferred">0</div>
+                    <div class="stat-label">MB Transferred</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="bitrateStat">2.5</div>
-                    <div class="stat-label">Mbps</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value" id="connectionTime">00:00</div>
+                    <div class="stat-label">Connection Time</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="latencyStat">15ms</div>
-                    <div class="stat-label">Latency</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <div class="stat-value" id="bufferSize">0</div>
+                    <div class="stat-label">Buffer Size</div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <div class="toast-content">
-            <i class="toast-icon" id="toastIcon"></i>
-            <div class="toast-text">
-                <h4 id="toastTitle">Notification</h4>
-                <p id="toastMessage">Message</p>
+    <!-- USB Detection Modal -->
+    <div class="detection-modal" id="detectionModal">
+        <div class="detection-content">
+            <div class="detection-icon">
+                <i class="fas fa-usb"></i>
             </div>
+            <h2 class="detection-title">Detecting USB Device</h2>
+            <p class="detection-message">Please connect your device via USB cable...</p>
+            <div class="detection-progress">
+                <div class="detection-progress-bar"></div>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                Make sure USB debugging is enabled on your device
+            </p>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p id="loadingText">Connecting...</p>
+    <!-- Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+        <div class="notification-content">
+            <i class="notification-icon" id="notificationIcon"></i>
+            <div class="notification-text">
+                <h4 id="notificationTitle">Notification</h4>
+                <p id="notificationMessage">Message</p>
+            </div>
         </div>
     </div>
 
     <script>
         // Global Variables
-        let selectedRole = null;
-        let connectionCode = null;
         let isConnected = false;
-        let localStream = null;
-        let peerConnection = null;
-        let connectionCheckInterval = null;
+        let isMirroring = false;
+        let isRecording = false;
+        let audioEnabled = true;
+        let connectionStartTime = null;
+        let dataTransferred = 0;
         let statsInterval = null;
+        let timeInterval = null;
+        let stream = null;
 
-        // Connection Storage (using sessionStorage for same browser testing)
-        const CONNECTION_KEY = 'mirrorsync_connection';
-        const CODE_EXPIRY = 300000; // 5 minutes
+        // Device Database (Simulation)
+        const deviceDatabase = {
+            'Samsung Galaxy S23': {
+                type: 'Android Phone',
+                usbVersion: 'USB 3.2',
+                speed: '5 Gbps',
+                battery: '85%',
+                resolution: '1080x2400'
+            },
+            'iPhone 15 Pro': {
+                type: 'iOS Phone',
+                usbVersion: 'USB-C',
+                speed: '10 Gbps',
+                battery: '72%',
+                resolution: '1179x2556'
+            },
+            'iPad Pro': {
+                type: 'iPad',
+                usbVersion: 'USB-C',
+                speed: '10 Gbps',
+                battery: '91%',
+                resolution: '2048x2732'
+            },
+            'Google Pixel 8': {
+                type: 'Android Phone',
+                usbVersion: 'USB 3.2',
+                speed: '5 Gbps',
+                battery: '68%',
+                resolution: '1080x2400'
+            }
+        };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            cleanupExpiredConnections();
-            updateStatus('Ready');
+            createUSBParticles();
+            updateStatus('Ready', false);
+            initializeTargetDevice();
         });
 
-        // Clean up expired connections
-        function cleanupExpiredConnections() {
-            const connections = JSON.parse(sessionStorage.getItem(CONNECTION_KEY) || '{}');
-            const now = Date.now();
-            
-            Object.keys(connections).forEach(code => {
-                if (now - connections[code].timestamp > CODE_EXPIRY) {
-                    delete connections[code];
-                }
-            });
-            
-            sessionStorage.setItem(CONNECTION_KEY, JSON.stringify(connections));
-        }
-
-        // Role Selection
-        function selectRole(role) {
-            selectedRole = role;
-            
-            // Update UI
-            document.querySelectorAll('.role-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            document.getElementById(role + 'Role').classList.add('selected');
-            
-            // Show code section
-            document.getElementById('codeSection').style.display = 'block';
-            
-            if (role === 'host') {
-                setupHost();
-            } else {
-                setupClient();
-            }
-            
-            showToast('success', 'Role Selected', `You are ${role}`);
-        }
-
-        // Setup Host
-        function setupHost() {
-            document.getElementById('hostSection').style.display = 'block';
-            document.getElementById('clientSection').style.display = 'none';
-            document.getElementById('connectBtnText').textContent = 'Waiting for Connection';
-            document.getElementById('connectBtn').disabled = true;
-            
-            // Generate code
-            connectionCode = generateCode();
-            document.getElementById('hostCode').textContent = connectionCode;
-            
-            // Store connection
-            const connections = JSON.parse(sessionStorage.getItem(CONNECTION_KEY) || '{}');
-            connections[connectionCode] = {
-                role: 'host',
-                status: 'waiting',
-                timestamp: Date.now()
-            };
-            sessionStorage.setItem(CONNECTION_KEY, JSON.stringify(connections));
-            
-            // Start checking for connections
-            startHostCheck();
-        }
-
-        // Setup Client
-        function setupClient() {
-            document.getElementById('hostSection').style.display = 'none';
-            document.getElementById('clientSection').style.display = 'block';
-            document.getElementById('connectBtnText').textContent = 'Connect';
-            document.getElementById('connectBtn').disabled = false;
-            
-            // Focus first input
-            document.getElementById('code1').focus();
-        }
-
-        // Generate 4-digit code
-        function generateCode() {
-            return Math.floor(1000 + Math.random() * 9000).toString();
-        }
-
-        // Handle code input
-        function handleCodeInput(digit) {
-            const input = document.getElementById(`code${digit}`);
-            const value = input.value;
-            
-            if (value.length === 1) {
-                input.classList.add('filled');
-                
-                // Move to next input
-                if (digit < 4) {
-                    document.getElementById(`code${digit + 1}`).focus();
-                } else {
-                    // All digits entered, enable connect
-                    document.getElementById('connectBtn').disabled = false;
-                }
-            } else {
-                input.classList.remove('filled');
+        // Create USB Particles
+        function createUSBParticles() {
+            const container = document.getElementById('usbParticles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'data-particle';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = (2 + Math.random() * 2) + 's';
+                container.appendChild(particle);
             }
         }
 
-        // Handle Connect
-        async function handleConnect() {
-            if (selectedRole === 'host') {
-                // Host is waiting
-                showToast('info', 'Waiting', 'Waiting for client to connect...');
-            } else {
-                // Client connecting
-                const code = getEnteredCode();
-                if (code.length !== 4) {
-                    showToast('error', 'Invalid Code', 'Please enter 4 digits');
-                    return;
-                }
-                
-                await connectAsClient(code);
-            }
+        // Initialize Target Device
+        function initializeTargetDevice() {
+            document.getElementById('targetType').textContent = 'PC/Laptop';
+            document.getElementById('targetUsbVersion').textContent = 'USB 3.2';
+            document.getElementById('targetSpeed').textContent = '5 Gbps';
+            document.getElementById('targetPortType').textContent = 'Type-C';
         }
 
-        // Get entered code
-        function getEnteredCode() {
-            return (
-                document.getElementById('code1').value +
-                document.getElementById('code2').value +
-                document.getElementById('code3').value +
-                document.getElementById('code4').value
-            );
-        }
-
-        // Connect as Client
-        async function connectAsClient(code) {
-            showLoading(true, 'Connecting to host...');
+        // Detect USB Device
+        function detectUSBDevice() {
+            const modal = document.getElementById('detectionModal');
+            modal.classList.add('show');
             
-            const connections = JSON.parse(sessionStorage.getItem(CONNECTION_KEY) || '{}');
-            const connection = connections[code];
-            
-            if (!connection) {
-                showLoading(false);
-                showToast('error', 'Connection Failed', 'Invalid code');
-                shakeCodeInputs();
-                return;
-            }
-            
-            if (connection.role !== 'host') {
-                showLoading(false);
-                showToast('error', 'Connection Failed', 'Invalid code');
-                shakeCodeInputs();
-                return;
-            }
-            
-            // Update connection status
-            connections[code].status = 'connecting';
-            connections[code].clientTimestamp = Date.now();
-            sessionStorage.setItem(CONNECTION_KEY, JSON.stringify(connections));
-            
-            // Wait for host acceptance
+            // Simulate device detection
             setTimeout(() => {
-                const updatedConnections = JSON.parse(sessionStorage.getItem(CONNECTION_KEY) || '{}');
-                const updatedConnection = updatedConnections[code];
+                modal.classList.remove('show');
                 
-                if (updatedConnection.status === 'connected') {
-                    // Connection accepted
-                    showLoading(false);
-                    establishConnection(code);
-                } else {
-                    // Host didn't accept
-                    showLoading(false);
-                    showToast('error', 'Connection Failed', 'Host did not accept connection');
-                }
+                // Random device from database
+                const devices = Object.keys(deviceDatabase);
+                const randomDevice = devices[Math.floor(Math.random() * devices.length)];
+                const deviceInfo = deviceDatabase[randomDevice];
+                
+                // Update source device info
+                document.getElementById('sourceType').textContent = deviceInfo.type;
+                document.getElementById('sourceUsbVersion').textContent = deviceInfo.usbVersion;
+                document.getElementById('sourceSpeed').textContent = deviceInfo.speed;
+                document.getElementById('sourceBattery').textContent = deviceInfo.battery;
+                
+                // Update UI
+                document.getElementById('sourceStatus').textContent = 'Device Detected';
+                document.getElementById('sourceLed').className = 'status-led connecting';
+                document.getElementById('sourcePort').classList.add('connected');
+                
+                // Enable connect button
+                document.getElementById('connectBtn').disabled = false;
+                
+                showNotification('success', 'Device Detected', `${randomDevice} connected via USB`);
+            }, 3000);
+        }
+
+        // Connect USB
+        function connectUSB() {
+            updateStatus('Connecting', false);
+            document.getElementById('sourceLed').className = 'status-led connecting';
+            document.getElementById('targetLed').className = 'status-led connecting';
+            
+            // Show cable connection
+            const cable = document.getElementById('cableConnection');
+            cable.classList.add('active');
+            
+            setTimeout(() => {
+                isConnected = true;
+                connectionStartTime = Date.now();
+                
+                // Update status
+                updateStatus('Connected', true);
+                document.getElementById('sourceStatus').textContent = 'Connected';
+                document.getElementById('targetStatus').textContent = 'Connected';
+                document.getElementById('sourceLed').className = 'status-led connected';
+                document.getElementById('targetLed').className = 'status-led connected';
+                document.getElementById('targetPort').classList.add('connected');
+                
+                // Enable/disable buttons
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('detectBtn').disabled = true;
+                document.getElementById('mirrorBtn').disabled = false;
+                document.getElementById('recordBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = false;
+                
+                showNotification('success', 'Connected', 'USB connection established successfully');
             }, 2000);
         }
 
-        // Start Host Check
-        function startHostCheck() {
-            document.getElementById('hostStatus').classList.add('show');
+        // Start Mirroring
+        function startMirroring() {
+            if (!isConnected) return;
             
-            connectionCheckInterval = setInterval(() => {
-                const connections = JSON.parse(sessionStorage.getItem(CONNECTION_KEY) || '{}');
-                const connection = connections[connectionCode];
-                
-                if (connection && connection.status === 'connecting') {
-                    // Client is trying to connect
-                    showToast('warning', 'Incoming Connection', 'Client is trying to connect...');
-                    
-                    // Auto-accept after 1 second
-                    setTimeout(() => {
-                        connections[connectionCode].status = 'connected';
-                        sessionStorage.setItem(CONNECTION_KEY, JSON.stringify(connections));
-                        establishConnection(connectionCode);
-                    }, 1000);
-                    
-                    clearInterval(connectionCheckInterval);
-                }
-            }, 500);
-        }
-
-        // Establish Connection
-        async function establishConnection(code) {
-            isConnected = true;
-            updateStatus('Connected');
-            updateStatusDot(true);
+            isMirroring = true;
+            document.getElementById('mirroringDisplay').classList.add('active');
+            document.getElementById('mirrorBtn').classList.add('active');
+            document.getElementById('mirrorBtn').innerHTML = '<i class="fas fa-stop"></i> Stop Mirroring';
             
-            // Hide setup, show mirroring
-            document.getElementById('setupScreen').style.display = 'none';
-            document.getElementById('mirroringScreen').style.display = 'block';
+            // Hide no signal message
+            document.getElementById('noSignal').style.display = 'none';
             
-            // Update device info
-            document.getElementById('deviceName').textContent = `${selectedRole === 'host' ? 'Client' : 'Host'} Device`;
-            document.getElementById('deviceStatus').textContent = 'Connection Active';
-            
-            showToast('success', 'Connected', 'Devices connected successfully!');
-            
-            // Start screen sharing if client
-            if (selectedRole === 'client') {
-                await startScreenShare();
-            } else {
-                // Host waits for stream
-                document.getElementById('waitingMessage').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('waitingMessage').style.display = 'none';
-                    document.getElementById('remoteVideo').style.display = 'block';
-                    startDemoVideo();
-                }, 2000);
-            }
+            // Start screen capture simulation
+            startScreenCapture();
             
             // Start stats
             startStatsUpdate();
+            startTimeUpdate();
+            
+            showNotification('info', 'Mirroring Started', 'Screen mirroring is now active');
         }
 
-        // Start Screen Share (Client)
-        async function startScreenShare() {
-            try {
-                // For demo, create a canvas stream
-                const canvas = document.createElement('canvas');
-                canvas.width = 1920;
-                canvas.height = 1080;
-                const ctx = canvas.getContext('2d');
-                
-                let frame = 0;
-                function draw() {
-                    frame++;
-                    
-                    // Background
-                    ctx.fillStyle = '#1e293b';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Grid
-                    ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
-                    ctx.lineWidth = 1;
-                    for (let i = 0; i < canvas.width; i += 50) {
-                        ctx.beginPath();
-                        ctx.moveTo(i, 0);
-                        ctx.lineTo(i, canvas.height);
-                        ctx.stroke();
-                    }
-                    for (let i = 0; i < canvas.height; i += 50) {
-                        ctx.beginPath();
-                        ctx.moveTo(0, i);
-                        ctx.lineTo(canvas.width, i);
-                        ctx.stroke();
-                    }
-                    
-                    // Content
-                    const time = Date.now() / 1000;
-                    ctx.fillStyle = '#3b82f6';
-                    ctx.font = 'bold 72px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('CLIENT SCREEN', canvas.width / 2, canvas.height / 2 - 50);
-                    
-                    ctx.font = '36px Arial';
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.fillText(`Frame: ${frame} | Time: ${new Date().toLocaleTimeString()}`, canvas.width / 2, canvas.height / 2 + 60);
-                    
-                    // Animated circles
-                    for (let i = 0; i < 6; i++) {
-                        const angle = (i / 6) * Math.PI * 2 + time;
-                        const x = canvas.width / 2 + Math.cos(angle) * 300;
-                        const y = canvas.height / 2 + Math.sin(angle) * 200;
-                        
-                        ctx.beginPath();
-                        ctx.arc(x, y, 25, 0, Math.PI * 2);
-                        ctx.fillStyle = `hsl(${i * 60 + frame * 2}, 70%, 50%)`;
-                        ctx.fill();
-                    }
-                    
-                    requestAnimationFrame(draw);
-                }
-                
-                draw();
-                localStream = canvas.captureStream(30);
-                
-                // In real implementation, send stream to host
-                // For demo, just show it locally
-                const video = document.getElementById('remoteVideo');
-                video.srcObject = localStream;
-                video.style.display = 'block';
-                document.getElementById('waitingMessage').style.display = 'none';
-                
-            } catch (error) {
-                console.error('Screen share error:', error);
-                showToast('error', 'Screen Share Failed', 'Could not capture screen');
-            }
-        }
-
-        // Start Demo Video (Host)
-        function startDemoVideo() {
+        // Start Screen Capture (Simulation)
+        function startScreenCapture() {
             const canvas = document.createElement('canvas');
             canvas.width = 1920;
             canvas.height = 1080;
@@ -1190,11 +1118,11 @@
                 frame++;
                 
                 // Background
-                ctx.fillStyle = '#0f172a';
+                ctx.fillStyle = '#0a0e1a';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Grid
-                ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+                // Grid pattern
+                ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
                 ctx.lineWidth = 1;
                 for (let i = 0; i < canvas.width; i += 50) {
                     ctx.beginPath();
@@ -1211,60 +1139,132 @@
                 
                 // Content
                 const time = Date.now() / 1000;
-                ctx.fillStyle = '#3b82f6';
+                ctx.fillStyle = '#00d4ff';
                 ctx.font = 'bold 72px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('HOST RECEIVING', canvas.width / 2, canvas.height / 2 - 50);
+                ctx.fillText('USB MIRRORING', canvas.width / 2, canvas.height / 2 - 50);
                 
                 ctx.font = '36px Arial';
-                ctx.fillStyle = '#94a3b8';
+                ctx.fillStyle = '#8892b0';
                 ctx.fillText(`Frame: ${frame} | Time: ${new Date().toLocaleTimeString()}`, canvas.width / 2, canvas.height / 2 + 60);
                 
-                // Connection visualization
+                // USB data flow visualization
                 for (let i = 0; i < 8; i++) {
                     const angle = (i / 8) * Math.PI * 2 + time * 0.5;
-                    const x = canvas.width / 2 + Math.cos(angle) * 250;
-                    const y = canvas.height / 2 + Math.sin(angle) * 250;
+                    const x = canvas.width / 2 + Math.cos(angle) * 300;
+                    const y = canvas.height / 2 + Math.sin(angle) * 200;
                     
                     ctx.beginPath();
-                    ctx.arc(x, y, 20, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsl(${i * 45 + frame}, 70%, 50%)`;
+                    ctx.arc(x, y, 25, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${180 + i * 20 + frame * 2}, 100%, 50%)`;
                     ctx.fill();
                     
-                    // Lines to center
+                    // Data lines
                     ctx.beginPath();
                     ctx.moveTo(canvas.width / 2, canvas.height / 2);
                     ctx.lineTo(x, y);
-                    ctx.strokeStyle = `hsla(${i * 45 + frame}, 70%, 50%, 0.3)`;
+                    ctx.strokeStyle = `hsla(${180 + i * 20 + frame * 2}, 100%, 50%, 0.3)`;
                     ctx.lineWidth = 2;
                     ctx.stroke();
                 }
+                
+                // USB indicator
+                ctx.fillStyle = '#00ff88';
+                ctx.font = '24px Arial';
+                ctx.fillText('USB 3.2 CONNECTED', canvas.width / 2, canvas.height - 50);
                 
                 requestAnimationFrame(draw);
             }
             
             draw();
             
-            const video = document.getElementById('remoteVideo');
-            video.srcObject = canvas.captureStream(30);
+            // Create stream from canvas
+            stream = canvas.captureStream(30);
+            const video = document.getElementById('mirroredScreen');
+            video.srcObject = stream;
+            video.style.display = 'block';
         }
 
-        // Start Stats Update
-        function startStatsUpdate() {
-            statsInterval = setInterval(() => {
-                if (isConnected) {
-                    document.getElementById('fpsStat').textContent = Math.floor(28 + Math.random() * 8);
-                    document.getElementById('bitrateStat').textContent = (2 + Math.random() * 2).toFixed(1);
-                    document.getElementById('latencyStat').textContent = Math.floor(10 + Math.random() * 15) + 'ms';
+        // Toggle Recording
+        function toggleRecording() {
+            if (!isMirroring) return;
+            
+            isRecording = !isRecording;
+            const btn = document.getElementById('recordBtn');
+            
+            if (isRecording) {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+                showNotification('info', 'Recording Started', 'Screen recording is now active');
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fas fa-record-vinyl"></i> Record';
+                showNotification('info', 'Recording Stopped', 'Screen recording has been saved');
+            }
+        }
+
+        // Disconnect USB
+        function disconnectUSB() {
+            if (confirm('Are you sure you want to disconnect the USB device?')) {
+                // Stop everything
+                isMirroring = false;
+                isConnected = false;
+                isRecording = false;
+                
+                // Stop stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
                 }
-            }, 2000);
+                
+                // Clear intervals
+                if (statsInterval) clearInterval(statsInterval);
+                if (timeInterval) clearInterval(timeInterval);
+                
+                // Reset UI
+                updateStatus('Ready', false);
+                document.getElementById('sourceStatus').textContent = 'Disconnected';
+                document.getElementById('targetStatus').textContent = 'Disconnected';
+                document.getElementById('sourceLed').className = 'status-led';
+                document.getElementById('targetLed').className = 'status-led';
+                document.getElementById('sourcePort').classList.remove('connected');
+                document.getElementById('targetPort').classList.remove('connected');
+                document.getElementById('cableConnection').classList.remove('active');
+                document.getElementById('mirroringDisplay').classList.remove('active');
+                document.getElementById('mirroredScreen').style.display = 'none';
+                document.getElementById('noSignal').style.display = 'block';
+                
+                // Reset buttons
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('detectBtn').disabled = false;
+                document.getElementById('mirrorBtn').disabled = true;
+                document.getElementById('recordBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('mirrorBtn').classList.remove('active');
+                document.getElementById('mirrorBtn').innerHTML = '<i class="fas fa-tv"></i> Start Mirroring';
+                document.getElementById('recordBtn').classList.remove('active');
+                document.getElementById('recordBtn').innerHTML = '<i class="fas fa-record-vinyl"></i> Record';
+                
+                // Reset device info
+                document.getElementById('sourceType').textContent = '-';
+                document.getElementById('sourceUsbVersion').textContent = '-';
+                document.getElementById('sourceSpeed').textContent = '-';
+                document.getElementById('sourceBattery').textContent = '-';
+                
+                // Reset stats
+                dataTransferred = 0;
+                connectionStartTime = null;
+                updateStats();
+                
+                showNotification('info', 'Disconnected', 'USB device has been disconnected');
+            }
         }
 
         // Toggle Fullscreen
         function toggleFullscreen() {
-            const screenDisplay = document.querySelector('.screen-display');
+            const screenContainer = document.querySelector('.screen-container');
             if (!document.fullscreenElement) {
-                screenDisplay.requestFullscreen();
+                screenContainer.requestFullscreen();
             } else {
                 document.exitFullscreen();
             }
@@ -1272,119 +1272,95 @@
 
         // Toggle Audio
         function toggleAudio() {
-            const audioBtn = document.getElementById('audioBtn');
-            if (audioBtn.classList.contains('fa-volume-up')) {
-                audioBtn.classList.remove('fa-volume-up');
-                audioBtn.classList.add('fa-volume-mute');
-                showToast('info', 'Audio Muted', 'Audio has been muted');
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('audioIcon');
+            if (audioEnabled) {
+                icon.className = 'fas fa-volume-up';
+                showNotification('info', 'Audio Enabled', 'Audio transmission is active');
             } else {
-                audioBtn.classList.remove('fa-volume-mute');
-                audioBtn.classList.add('fa-volume-up');
-                showToast('info', 'Audio Unmuted', 'Audio has been unmuted');
+                icon.className = 'fas fa-volume-mute';
+                showNotification('info', 'Audio Muted', 'Audio transmission is muted');
             }
         }
 
-        // Disconnect
-        function disconnect() {
-            if (confirm('Are you sure you want to disconnect?')) {
-                cleanup();
-                showToast('info', 'Disconnected', 'Connection has been terminated');
-            }
+        // Take Screenshot
+        function takeScreenshot() {
+            if (!isMirroring) return;
+            
+            const video = document.getElementById('mirroredScreen');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // Download screenshot
+            const link = document.createElement('a');
+            link.download = `screenshot_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            
+            showNotification('success', 'Screenshot Saved', 'Screenshot has been saved to your device');
         }
 
-        // Reset All
-        function resetAll() {
-            cleanup();
-            showToast('info', 'Reset', 'Application has been reset');
+        // Open Transfer Settings
+        function openTransferSettings() {
+            showNotification('info', 'Settings', 'Transfer settings panel would open here');
         }
 
-        // Cleanup
-        function cleanup() {
-            isConnected = false;
-            selectedRole = null;
-            connectionCode = null;
-            
-            // Clear intervals
-            if (connectionCheckInterval) {
-                clearInterval(connectionCheckInterval);
-            }
-            if (statsInterval) {
-                clearInterval(statsInterval);
-            }
-            
-            // Stop stream
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            // Clean up connection
-            if (connectionCode) {
-                const connections = JSON.parse(sessionStorage.getItem(CONNECTION_KEY) || '{}');
-                delete connections[connectionCode];
-                sessionStorage.setItem(CONNECTION_KEY, JSON.stringify(connections));
-            }
-            
-            // Reset UI
-            updateStatus('Ready');
-            updateStatusDot(false);
-            
-            document.getElementById('setupScreen').style.display = 'flex';
-            document.getElementById('mirroringScreen').style.display = 'none';
-            document.getElementById('codeSection').style.display = 'none';
-            document.getElementById('hostSection').style.display = 'none';
-            document.getElementById('clientSection').style.display = 'none';
-            document.getElementById('hostStatus').classList.remove('show');
-            
-            document.querySelectorAll('.role-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
-            document.querySelectorAll('.code-input').forEach(input => {
-                input.value = '';
-                input.classList.remove('filled', 'error');
-            });
-            
-            document.getElementById('connectBtn').disabled = false;
-            document.getElementById('connectBtnText').textContent = 'Start';
-            document.getElementById('remoteVideo').style.display = 'none';
-            document.getElementById('waitingMessage').style.display = 'block';
+        // Start Stats Update
+        function startStatsUpdate() {
+            statsInterval = setInterval(() => {
+                if (isMirroring) {
+                    // Simulate data transfer
+                    const speed = 50 + Math.random() * 100; // MB/s
+                    dataTransferred += speed / 10; // Update every 100ms
+                    
+                    updateStats();
+                }
+            }, 100);
+        }
+
+        // Update Stats Display
+        function updateStats() {
+            document.getElementById('transferSpeed').textContent = (50 + Math.random() * 100).toFixed(1);
+            document.getElementById('dataTransferred').textContent = dataTransferred.toFixed(1);
+            document.getElementById('bufferSize').textContent = (10 + Math.random() * 20).toFixed(1);
+        }
+
+        // Start Time Update
+        function startTimeUpdate() {
+            timeInterval = setInterval(() => {
+                if (connectionStartTime) {
+                    const elapsed = Date.now() - connectionStartTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    document.getElementById('connectionTime').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
         }
 
         // Update Status
-        function updateStatus(text) {
+        function updateStatus(text, connected) {
             document.getElementById('statusText').textContent = text;
-        }
-
-        // Update Status Dot
-        function updateStatusDot(active) {
-            const dot = document.getElementById('statusDot');
-            if (active) {
-                dot.classList.add('active');
+            const led = document.getElementById('statusLed');
+            if (connected) {
+                led.className = 'status-led connected';
             } else {
-                dot.classList.remove('active');
+                led.className = 'status-led';
             }
         }
 
-        // Shake Code Inputs
-        function shakeCodeInputs() {
-            document.querySelectorAll('.code-input').forEach(input => {
-                input.classList.add('error');
-                setTimeout(() => {
-                    input.classList.remove('error');
-                }, 500);
-            });
-        }
-
-        // Show Toast
-        function showToast(type, title, message) {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            const titleEl = document.getElementById('toastTitle');
-            const messageEl = document.getElementById('toastMessage');
+        // Show Notification
+        function showNotification(type, title, message) {
+            const toast = document.getElementById('notificationToast');
+            const icon = document.getElementById('notificationIcon');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
             
             // Reset classes
-            toast.className = 'toast';
+            toast.className = 'notification-toast';
             
             // Set content
             titleEl.textContent = title;
@@ -1395,13 +1371,11 @@
             
             // Set icon
             if (type === 'success') {
-                icon.className = 'fas fa-check-circle toast-icon';
+                icon.className = 'fas fa-check-circle notification-icon';
             } else if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle toast-icon';
-            } else if (type === 'warning') {
-                icon.className = 'fas fa-exclamation-triangle toast-icon';
+                icon.className = 'fas fa-exclamation-circle notification-icon';
             } else {
-                icon.className = 'fas fa-info-circle toast-icon';
+                icon.className = 'fas fa-info-circle notification-icon';
             }
             
             // Show toast
@@ -1415,36 +1389,43 @@
             }, 3000);
         }
 
-        // Show Loading
-        function showLoading(show, text = 'Loading...') {
-            const overlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            
-            loadingText.textContent = text;
-            if (show) {
-                overlay.classList.add('show');
-            } else {
-                overlay.classList.remove('show');
-            }
-        }
-
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && selectedRole && !document.getElementById('connectBtn').disabled) {
-                handleConnect();
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'd':
+                        e.preventDefault();
+                        if (!document.getElementById('detectBtn').disabled) {
+                            detectUSBDevice();
+                        }
+                        break;
+                    case 'm':
+                        e.preventDefault();
+                        if (!document.getElementById('mirrorBtn').disabled) {
+                            startMirroring();
+                        }
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        if (!document.getElementById('recordBtn').disabled) {
+                            toggleRecording();
+                        }
+                        break;
+                }
             }
+            
             if (e.key === 'Escape') {
                 if (isConnected) {
-                    disconnect();
-                } else {
-                    resetAll();
+                    disconnectUSB();
                 }
             }
         });
 
         // Clean up on page unload
         window.addEventListener('beforeunload', () => {
-            cleanup();
+            if (isConnected) {
+                disconnectUSB();
+            }
         });
     </script>
 </body>
